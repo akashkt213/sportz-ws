@@ -1,4 +1,5 @@
 import express from "express";
+import { commentaryRouter } from "./routes/commentary.js";
 import { healthRouter } from "./routes/health.js";
 import { matchRouter } from "./routes/matches.js";
 
@@ -12,3 +13,4 @@ app.get("/", (_req, res) => {
 
 app.use(healthRouter);
 app.use("/matches", matchRouter);
+app.use("/matches/:id/commentary", commentaryRouter);
