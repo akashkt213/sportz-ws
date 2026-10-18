@@ -1,4 +1,4 @@
-import type { Match } from "../db/schema.js";
+import type { Commentary, Match } from "../db/schema.js";
 
 // Types for values stored on `app.locals`, so routes get them type-checked instead of `any`.
 declare global {
@@ -6,6 +6,7 @@ declare global {
     interface Locals {
       // Optional: absent when the app runs without the WebSocket server (e.g. in tests).
       broadcastMatchCreated?: (match: Match) => void;
+      broadcastCommentary?: (matchId: number, comment: Commentary) => void;
     }
   }
 }

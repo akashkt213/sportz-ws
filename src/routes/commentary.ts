@@ -2,7 +2,10 @@ import { desc, DrizzleQueryError, eq } from "drizzle-orm";
 import { Router } from "express";
 import { db } from "../db/index.js";
 import { commentary } from "../db/schema.js";
-import { createCommentarySchema, listCommentaryQuerySchema } from "../validation/commentary.js";
+import {
+  createCommentarySchema,
+  listCommentaryQuerySchema,
+} from "../validation/commentary.js";
 import { matchIdParamSchema } from "../validation/matches.js";
 
 // The schema already caps limit at 100; this cap keeps the query safe if that rule ever changes.
@@ -14,7 +17,9 @@ const FOREIGN_KEY_VIOLATION = "23503";
 
 function isForeignKeyViolation(error: unknown): boolean {
   const cause = error instanceof DrizzleQueryError ? error.cause : error;
-  return (cause as { code?: string } | undefined)?.code === FOREIGN_KEY_VIOLATION;
+  return (
+    (cause as { code?: string } | undefined)?.code === FOREIGN_KEY_VIOLATION
+  );
 }
 
 // mergeParams exposes :id from the parent mount path (/matches/:id/commentary).
@@ -84,9 +89,20 @@ commentaryRouter.post("/", async (req, res) => {
       .returning();
 
     res.status(201).json({ data: entry });
+
+    // The comment is already saved; a broadcast failure must not turn this into a 500.
+    if (entry) {
+      try {
+        req.app.locals.broadcastCommentary?.(entry.matchId, entry);
+      } catch (error) {
+        console.error("Failed to broadcast commentary:", error);
+      }
+    }
   } catch (error) {
     if (isForeignKeyViolation(error)) {
-      return res.status(404).json({ error: `Match ${params.data.id} not found` });
+      return res
+        .status(404)
+        .json({ error: `Match ${params.data.id} not found` });
     }
 
     console.error("Failed to create commentary:", error);

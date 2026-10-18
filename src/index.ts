@@ -6,8 +6,9 @@ import { attachWebSocketServer } from "./ws/server.js";
 // One HTTP server shared by Express and the WebSocket server, so both run on the same port.
 const server = http.createServer(app);
 
-const { broadcastMatchCreated } = attachWebSocketServer(server);
+const { broadcastMatchCreated, broadcastCommentary } = attachWebSocketServer(server);
 app.locals.broadcastMatchCreated = broadcastMatchCreated;
+app.locals.broadcastCommentary = broadcastCommentary;
 
 server.on("error", (err) => {
   console.error(`Failed to start server: ${err.message}`);
